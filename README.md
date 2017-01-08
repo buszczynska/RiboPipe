@@ -2,7 +2,7 @@
 
 **RiboPipe** is a robust and versatile analysis pipeline to identify co-translationally imported mitochondrial proteins in zebrafish. 
 
-**PLEASE NOTE:** RiboPipe is currently under development and so far two parts have been completed: 
+**PLEASE NOTE:** RiboPipe is currently under the development and so far two parts have been completed: 
 
 **GO.R -** an algorithm for functional annotation that is also suitable for human and mouse.
 
