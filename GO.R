@@ -1,15 +1,11 @@
 #!/usr/bin/env Rscript
 
-# -- Variables --
-
 options(stringsAsFactors=F)
 pseudocount = 1e-04
-cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") 
 
-
-##################
-# OPTION PARSING
-##################
+#---------------------------------------------------------
+# OPTIONS
+#---------------------------------------------------------
 
 suppressPackageStartupMessages(library("optparse"))
 
@@ -31,9 +27,9 @@ if (opt$verbose) {print(opt)}
 
 
 
-##------------
-## LIBRARIES
-##------------ 
+#---------------------------------------------------------
+# LIBRARIES
+#--------------------------------------------------------- 
 
 if (opt$verbose) {cat("Loading libraries... ")}
 
@@ -48,16 +44,11 @@ suppressPackageStartupMessages(library("plyr"))
 
 if (opt$verbose) {cat("DONE\n\n")}
 
-############################
-# BEGIN
-############################
+#---------------------------------------------------------
+# THE CODE
+#---------------------------------------------------------
 
 U = read.table(opt$universe, h=F, col.names='hs')
-#if (opt$genes == "stdin") {
-#	G = read.table(file("stdin"), h=T, col.names='hs')	
-#} else {
-#	G = read.table(opt$genes, h=T, col.names='hs')
-#}
 
 if (opt$genes == "stdin") {
 	G = read.table(file("stdin"), h=F, col.names='hs')	
@@ -65,10 +56,6 @@ if (opt$genes == "stdin") {
 	G = read.table(opt$genes, h=F, col.names='hs')
 }
 
-
-# I want to create a list of parameters to perform GO enrichment on different gene sets
-
-# take the entrez gene ids for all the orthologous genes which will be my universe (the same for all the sets)
 if (opt$species == "human") {
 universe = unlist(mget(U$hs, org.Hs.egENSEMBL2EG, ifnotfound=NA))}
 
@@ -82,11 +69,6 @@ if (opt$species == "danio") {
 universe = unlist(mget(U$hs, org.Dr.egENSEMBL2EG, ifnotfound=NA))}
 
 if (opt$verbose) {sprintf("%s background genes; %s with a corresponding entrez id", nrow(U), length(unique(universe)))}
-# how many genes am I able to map?
-# First thing notice that also ensembl gene ids longer than 15 characters are included
-# if I remove these genes I end up with:
-# length(unique(as.character(universe[which(nchar(names(universe)) == 15)]))) ----> 15593
-
 
 createParams = function(x, species="human") {
 	if (species == "human") {
@@ -119,13 +101,14 @@ createParams = function(x, species="human") {
 
 res = hyperGTest(createParams(G$hs, opt$species))
 
-# Reformat the output table
 df = summary(res)
 df$Pvalue = format(df$Pvalue, digits=1) 
 df$OddsRatio <- round(df$OddsRatio, 2)
 df$ExpCount <- round(df$ExpCount, 2)
 
-# Print output
+#---------------------------------------------------------
+# OUTPUT
+#---------------------------------------------------------
 output = sprintf("%s/%s.%s", opt$output_dir, opt$output, opt$categ)
 write.table(df, file=sprintf("%s.tsv", output), quote=F, sep="\t", row.names=F)
 htmlReport(res, file=sprintf("%s.html", output))
