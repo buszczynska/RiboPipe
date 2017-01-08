@@ -25,8 +25,6 @@ arguments <- parse_args(parser, positional_arguments = TRUE)
 opt <- arguments$options
 if (opt$verbose) {print(opt)}
 
-
-
 #---------------------------------------------------------
 # LIBRARIES
 #--------------------------------------------------------- 
