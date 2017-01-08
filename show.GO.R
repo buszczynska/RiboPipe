@@ -1,11 +1,10 @@
 #!/usr/bin/env Rscript
 
-
 options(stringsAsFactors=FALSE)
 
-##################
+#---------------------------------------------------------
 # OPTION PARSING
-##################
+#---------------------------------------------------------
 
 suppressPackageStartupMessages(library("optparse"))
 
@@ -46,9 +45,9 @@ arguments <- parse_args(parser, positional_arguments = TRUE)
 opt <- arguments$options
 if (opt$verbose) {print(opt)}
 
-#------------
+#---------------------------------------------------------
 # LIBRARIES
-#------------ 
+#---------------------------------------------------------
 
 if (opt$verbose) {cat("Loading libraries... ")}
 suppressPackageStartupMessages(library(reshape2))
@@ -57,19 +56,16 @@ suppressPackageStartupMessages(library(stringr))
 #suppressPackageStartupMessages(library(plyr))
 if (opt$verbose) {cat("DONE\n\n")}
 
+#---------------------------------------------------------
+# THE CODE
+#---------------------------------------------------------
 
-# ======== #
-# BEGIN    #
-# ======== #
-
-
-# Read data
+# INPUT
 if (opt$input == "stdin") {input=file("stdin")} else {input=opt$input}
 m = read.table(input, h=opt$header, sep="\t") 
 
 df = m
 
-# Read columns
 y_col = 2
 y_col = colnames(df)[y_col]
 df[y_col] <- -log10(df[y_col])
@@ -91,9 +87,9 @@ df[toNL, x_col] <- subst[toNL]
 levs = df[order(df[,y_col]),x_col]
 df[,x_col] <- factor(df[,x_col], levels=levs)
 
-#================
+#---------------------------------------------------------
 # GGPLOT
-#================
+#---------------------------------------------------------
 
 theme_set(theme_bw(base_size=16))
 theme_update(
@@ -103,7 +99,6 @@ theme_update(
 	panel.grid.major = element_blank()
 )
 
-#opt$fill = "dodgerblue"
 opt$color = "black"
 
 geom_params = list()
@@ -113,27 +108,17 @@ if (is.null(opt$fill_by)) {
 	geom_params$color = opt$color
 }
 
-## specify fill column
-#if (!is.null(opt$fill_by)) {
-#	mapping <- aes_string(fill=F_col)
-#} else {
-#	mapping = NULL
-#}
 mapping = NULL
 
-# define histogram layer 
 histLayer <- layer(
     geom = "bar",
-#    geom_params = geom_params,
         params = geom_params,
         position = "identity",
         mapping = mapping,
     stat = "identity"
 )
 
-#opt$width = 7
-
-# start the plot
+# PLOT THE RESULTS
 png(opt$output, units="in", width=opt$width, height=opt$height, res=500)
 gp = ggplot(df, aes_string(x = x_col, y = y_col))
 gp = gp + histLayer
@@ -141,6 +126,5 @@ gp = gp + coord_flip()
 gp = gp + labs(y="-log10(pvalue)", x=NULL) + ylim(0,opt$max)
 gp
 dev.off()
-#ggsave(opt$output, h=opt$height, w=opt$width, title=opt$output)
 
 q(save='no')
